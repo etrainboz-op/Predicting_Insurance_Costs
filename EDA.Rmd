@@ -1,0 +1,213 @@
+---
+title: "EDA Code"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r}
+# Import plotting library
+library(ggplot2)
+
+# Reads in data frame
+df <- read.csv("insurance.csv")
+
+# Sets categorical variables as factors
+df$children <- as.factor(df$children)
+df$sex <- as.factor(df$sex)
+df$smoker <- as.factor(df$smoker)
+df$region <- as.factor(df$region)
+  
+# Prints head of data frame
+head(df)
+```
+```{r}
+# Checks for any missing values in the data set
+sum(is.na(df))
+```
+```{r}
+# Gives summary statistics for each variable in the data set
+summary(df)
+```
+```{r}
+# Makes breaks for histogram
+hist_breaks <- seq(0, 70000, by = 2500)
+
+# Creates histogram of insurance charges
+hist(df$charges, main="Histogram of Charges", xlab="Charges (Dollars)",
+     xlim=range(0,70000), breaks=hist_breaks, ylim=range(0,250),
+     col="steelblue")
+```
+```{r}
+# Creates box plot of charges
+boxplot(df$charges, main="Box Plot of Charges", ylab="Charges (Dollars)",
+        col="steelblue")
+```
+
+```{r}
+# Sets x equal to charges
+x <- df$charges
+
+# Finds the first and third quartile of charges
+Q1 <- quantile(x, 0.25)
+Q3 <- quantile(x, 0.75)
+
+# Gets the interquartile range
+IQR_val <- IQR(x)
+
+# Finds the lower and upper bounds 
+lower_bound <- Q1 - (1.5 * IQR_val)
+upper_bound <- Q3 + (1.5 * IQR_val)
+
+# Counts outliers
+sum(x > upper_bound)
+```
+
+```{r}
+# Creates log transformation of charges
+df$log_charges <- log(df$charges)
+
+# Gives summary statistics for new variable
+summary(df$log_charges)
+```
+
+
+```{r}
+# Makes breaks for histogram
+hist_breaks <- seq(0, 12, by = 0.25)
+
+# Creates histogram of log insurance charges
+hist(df$log_charges, main="Histogram of Log Charges", xlim=range(7,12),
+     ylim=range(0,200), breaks=hist_breaks, xlab="Charges (Log Dollars)",
+     col="steelblue")
+```
+```{r}
+# Creates box plot of log charges
+boxplot(df$log_charges, main="Box Plot of Log Charges", 
+        ylab="Charges (Log Dollars)", col="steelblue")
+```
+
+
+```{r}
+# Sets x equal to charges
+x <- df$charges
+
+# Finds the first and third quartile of charges
+Q1 <- quantile(x, 0.25)
+Q3 <- quantile(x, 0.75)
+
+# Gets the interquartile range
+IQR_val <- IQR(x)
+
+# Finds the lower and upper bounds 
+lower_bound <- Q1 - (1.5 * IQR_val)
+upper_bound <- Q3 + (1.5 * IQR_val)
+
+# Counts outliers
+sum(x > upper_bound)
+```
+```{r}
+# Counts number of males in data set
+sum(df$sex == "male")
+```
+```{r}
+# Counts number of females in data set
+sum(df$sex == "female")
+```
+```{r}
+# Makes breaks for histogram
+hist_breaks <- seq(15, 57.5, by = 2.5)
+
+# Creates histogram of BMI
+hist(df$bmi, main="Histogram of BMI", xlab="BMI", xlim=range(10,60),
+     breaks=hist_breaks, ylim=range(0,250), col="steelblue")
+```
+```{r}
+# Creates box plot of bmi
+boxplot(df$bmi, main="Box Plot of BMI", ylab="BMI", col="steelblue")
+```
+```{r}
+# Sets x equal to BMI
+x <- df$bmi
+
+# Finds the first and third quartile of BMI
+Q1 <- quantile(x, 0.25)
+Q3 <- quantile(x, 0.75)
+
+# Gets the interquartile range
+IQR_val <- IQR(x)
+
+# Finds the lower and upper bounds 
+lower_bound <- Q1 - (1.5 * IQR_val)
+upper_bound <- Q3 + (1.5 * IQR_val)
+
+# Counts outliers
+sum(x > upper_bound)
+```
+```{r}
+# Creates bar plot of number of children
+ggplot(df, aes(x = children)) +
+  geom_bar(fill = "steelblue") +
+  labs(title = "Distribution of Children",
+       x = "Number of Children",
+       y = "Count") + scale_x_discrete(breaks = 0:5)
+```
+```{r}
+# Plots side by side box plots of log charges against number of children
+plot(df$children, df$log_charges, col="steelblue")
+```
+
+```{r}
+# Makes breaks for histogram
+hist_breaks <- seq(16, 66, by = 2)
+
+# Creates histogram of ages
+hist(df$age, main="Histogram of Age", xlab="Age (Years)", xlim=range(10,70),
+     breaks=hist_breaks, col="steelblue")
+```
+```{r}
+# Creates box plot of age
+boxplot(df$age, main="Box Plot of Age", ylab="Age (Years)", col="steelblue")
+```
+```{r}
+# Shows bar plot of regions 
+ggplot(df, aes(x = region)) +
+  geom_bar(fill = "steelblue") +
+  labs(title = "Distribution of Region",
+       x = "Region",
+       y = "Count") + scale_x_discrete(labels = c("North East", "North West",
+                                                  "South East", "South West"))
+```
+
+
+```{r}
+# Counts number of smokers in the data set
+sum(df$smoker == "yes")
+```
+```{r}
+# Counts number of non-smokers in the data set
+sum(df$smoker == "no")
+```
+
+
+```{r}
+# Plots age against log charges with smoking status overlay
+plot(df$age, df$log_charges, col = df$smoker, 
+     main="Plot of Age and Log Charges Given Smoking Status", xlab="Age",
+     ylab="Charges (Log Dollars)")
+legend("bottomright", legend = levels(df$smoker),
+       col = c(1,2), pch = 1)
+```
+
+
+```{r}
+# Gives the maximum charge for a male
+max(df[df$sex == "male",]$charges)
+```
+
+
+```{r}
+# Gives the maximum charge for a female
+max(df[df$sex == "female",]$charges)
+```
+

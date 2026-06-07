@@ -1,0 +1,188 @@
+---
+title: "Multiple Linear Model Code"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r}
+# Loads in library
+library(car)
+
+# Sets seed for reproducibility
+set.seed(42)
+```
+
+
+```{r}
+# Reads in data frame
+df <- read.csv("insurance.csv")
+
+# Creates log transformation of charges
+df$log_charges <- log(df$charges)
+
+# Sets categorical variables to be factors
+df$sex <- as.factor(df$sex)
+df$children <- as.factor(df$children)
+df$smoker <- as.factor(df$smoker)
+df$region <- as.factor(df$region)
+
+# Creates training and testing sets
+n <- nrow(df)
+train_index <- sample(1:n, size = 0.7 * n)
+
+df_train <- df[train_index, ]
+df_test  <- df[-train_index, ]
+
+# Shows header of data frame
+head(df)
+```
+
+
+```{r}
+# Creates regression model of all variables
+lm1 <- lm(log_charges ~ smoker + age + children + bmi + region + sex, 
+          data=df_train)
+# Prints model summary
+summary(lm1)
+```
+
+```{r}
+# Prints model diagnostic plots
+par(mfrow=c(2,2))
+plot(lm1)
+```
+
+
+
+```{r}
+# Calculates rmse for training set
+sqrt(mean((df[as.numeric(names(lm1$fitted.values)),]$charges - exp(lm1$fitted.values))^2))
+```
+
+
+```{r}
+# Calculates rmse for test set
+pred <- exp(predict(lm1, newdata=df_test))
+
+sqrt(mean((df_test$charges - pred)^2))
+```
+
+
+```{r}
+# Creates regression model without age variable
+lm2 <- lm(log_charges ~ smoker + bmi + children + region + sex, data=df_train)
+# Prints model summary
+summary(lm2)
+```
+
+
+```{r}
+# Prints diagnostic plots of model
+par(mfrow=c(2,2))
+plot(lm2)
+```
+
+
+```{r}
+# Calculates rmse for training set
+sqrt(mean((df[as.numeric(names(lm2$fitted.values)),]$charges - exp(lm2$fitted.values))^2))
+```
+
+
+```{r}
+# Calculates rmse for testing set
+pred <- exp(predict(lm2, newdata=df_test))
+
+sqrt(mean((df_test$charges - pred)^2))
+```
+
+
+```{r}
+# Creates regression with model with smoker and age interaction
+lm3 <- lm(log(charges) ~ smoker * age + bmi + children + region + sex, 
+          data=df_train)
+# Prints model summary
+summary(lm3)
+```
+
+
+```{r}
+# Prints model diagnostic plots
+par(mfrow=c(2,2))
+plot(lm3)
+```
+
+
+```{r}
+# Calculates rmse for training set
+sqrt(mean((df[as.numeric(names(lm3$fitted.values)),]$charges - exp(lm3$fitted.values))^2))
+```
+
+
+```{r}
+# Calculates rmse for testing set
+pred <- exp(predict(lm3, newdata=df_test))
+
+sqrt(mean((df_test$charges - pred)^2))
+```
+
+
+```{r}
+# Creates regression model of smoker interaction with bmi and age
+lm4 <- lm(log_charges ~ smoker * age + smoker * bmi + children + region + sex, 
+          data=df_train)
+# Prints model summary
+summary(lm4)
+```
+
+
+```{r}
+# Prints model diagnostic plots
+par(mfrow=c(2,2))
+plot(lm4)
+```
+
+
+```{r}
+# Calculates rmse for training data
+sqrt(mean((df[as.numeric(names(lm4$fitted.values)),]$charges - exp(lm4$fitted.values))^2))
+```
+
+
+```{r}
+# Calculates rmse for testing data
+pred <- exp(predict(lm4, newdata=df_test))
+
+sqrt(mean((df_test$charges - pred)^2))
+```
+
+
+```{r}
+# Creates model with just interaction terms
+lm5 <- lm(log(charges) ~ smoker * bmi + smoker * age, data=df_train)
+# Prints model summary
+summary(lm5)
+```
+
+
+```{r}
+# Prints model diagnostic plots
+par(mfrow=c(2,2))
+plot(lm5)
+```
+
+
+```{r}
+# Calculates training rmse
+sqrt(mean((df[as.numeric(names(lm5$fitted.values)),]$charges - exp(lm5$fitted.values))^2))
+```
+
+
+```{r}
+# Calculates testing rmse
+pred <- exp(predict(lm5, newdata=df_test))
+
+sqrt(mean((df_test$charges - pred)^2))
+```
+

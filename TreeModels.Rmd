@@ -1,0 +1,177 @@
+---
+title: "Tree Model Code"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+
+```{r}
+# Sets seed for reproducibility
+set.seed(42)
+```
+
+
+```{r}
+# Reads in libraries
+library(rpart)
+library(rpart.plot)
+library(randomForest)
+```
+
+
+```{r}
+# Reads in data frame
+df <- read.csv("insurance.csv")
+
+# Creates log transformation of charges
+df$log_charges <- log(df$charges)
+
+# Creates training and testing sets
+n <- nrow(df)
+train_index <- sample(1:n, size = 0.7 * n)
+
+df_train <- df[train_index, ]
+df_test  <- df[-train_index, ]
+
+# Prints header of data frame
+head(df)
+```
+
+
+```{r}
+# Creates regression tree with all predictors
+rt1 <- rpart(log_charges ~ smoker + age + bmi + children + region + sex, 
+             data=df_train, method="anova")
+```
+
+
+```{r}
+# Prints model summary
+summary(rt1)
+```
+
+
+
+```{r}
+# Plots tree
+rpart.plot(rt1)
+```
+
+```{r}
+# Calculates rmse on training data
+pred <- exp(predict(rt1, newdata=df_train))
+
+sqrt(mean((df[as.numeric(names(pred)),]$charges - pred)^2))
+```
+
+
+```{r}
+# Calculates rmse of testing data
+pred <- exp(predict(rt1, newdata=df_test))
+
+sqrt(mean((df_test$charges - pred)^2))
+```
+
+
+```{r}
+# Creates more complex tree with all predictors
+rt2 <- rpart(log_charges ~ smoker + age + bmi + children + region + sex, 
+             data=df_train, method="anova", 
+             control = rpart.control(cp = 0.001))
+```
+
+
+```{r}
+# Prints tree summary
+summary(rt2)
+```
+
+
+```{r}
+# Plots tree
+rpart.plot(rt2)
+```
+
+
+```{r}
+# Calculates rmse for training set
+pred <- exp(predict(rt2, newdata=df_train))
+
+sqrt(mean((df[as.numeric(names(pred)),]$charges - pred)^2))
+```
+
+
+```{r}
+# Calculates rmse for testing set
+pred <- exp(predict(rt2, newdata=df_test))
+
+sqrt(mean((df_test$charges - pred)^2))
+```
+
+
+```{r}
+# Creates random forest with all predictors
+rf1 <- randomForest(log_charges ~ smoker + bmi + region + age + sex + children,
+                    data=df_train, ntree=500, importance=T)
+```
+
+
+```{r}
+# Prints summary for forest model
+summary(rf1)
+```
+
+
+```{r}
+# Plots error over number of trees
+plot(rf1$mse, type = "l")
+```
+
+
+```{r}
+# Calculates training rmse
+pred <- exp(predict(rf1, newdata=df_train))
+
+sqrt(mean((df[as.numeric(names(pred)),]$charges - pred)^2))
+```
+
+
+```{r}
+# Calculates testing rmse
+pred <- exp(predict(rf1, newdata=df_test))
+
+sqrt(mean((df_test$charges - pred)^2))
+```
+
+
+```{r}
+# Creates random forest with different parameters
+rf2 <- randomForest(log_charges ~ smoker + bmi + age + children + region + sex, 
+                    data=df_train, ntree=500, mtry=4, nodesize=27)
+```
+
+
+```{r}
+# Plots mse over number of trees
+plot(rf2$mse, type = "l")
+```
+
+
+```{r}
+# Calculates rmse for training set
+pred <- exp(predict(rf2, newdata=df_train))
+
+sqrt(mean((df[as.numeric(names(pred)),]$charges - pred)^2))
+```
+
+
+```{r}
+# Calculates rmse for testing set
+pred <- exp(predict(rf2, newdata=df_test))
+
+sqrt(mean((df_test$charges - pred)^2))
+```
+
+
+

@@ -1,0 +1,207 @@
+---
+title: "Simple Linear Model Code"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+
+```{r}
+# Sets seed for reproducibility 
+set.seed(42)
+```
+
+
+```{r}
+# Reads in data frame
+df <- read.csv("insurance.csv")
+
+# Creates log transformation of charges
+df$log_charges <- log(df$charges)
+
+# Sets categorical variables as factors
+df$sex <- as.factor(df$sex)
+df$children <- as.factor(df$children)
+df$region <- as.factor(df$region)
+df$smoker <- as.factor(df$smoker)
+
+# Creates training and testing sets
+n <- nrow(df)
+train_index <- sample(1:n, size = 0.7 * n)
+
+df_train <- df[train_index, ]
+df_test  <- df[-train_index, ]
+
+# Prints snipit of data frame
+head(df)
+```
+
+
+```{r}
+# Plots bmi against log charges
+plot(df$bmi, df$log_charges, main="Plot of BMI and Log Charges", xlab="BMI",
+     ylab="Charges (Log Dollars)", col="steelblue")
+```
+
+
+```{r}
+# Creates regression model of just bmi
+lm1 <- lm(log_charges ~ bmi, data=df_train)
+# Prints summary of model
+summary(lm1)
+```
+
+
+```{r}
+# Prints diagnostic plots for model
+par(mfrow=c(2,2))
+plot(lm1)
+```
+
+
+```{r}
+# Plots trained regression line on training data
+plot(df_train$bmi, df_train$log_charges, main="Trained Regression of BMI", 
+     xlab="BMI", ylab="Charges (Log Dollars)", col="steelblue")
+abline(lm1, col="red")
+```
+
+
+```{r}
+# Calculates rmse for training set
+sqrt(mean((df[as.numeric(names(lm1$fitted.values)),]$charges - exp(lm1$fitted.values))^2))
+```
+
+
+```{r}
+# Plots trained regression line on test set
+plot(df_test$bmi, df_test$log_charges, main="Test Regression of BMI", 
+     xlab="BMI", ylab="Charges (Log Dollars)", col="steelblue")
+abline(lm1, col="red")
+```
+
+
+```{r}
+# Calculates rmse for test set
+pred <- exp(predict(lm1, newdata=df_test))
+
+sqrt(mean((df_test$charges - pred)^2))
+```
+
+
+```{r}
+# Plots age against log charges
+plot(df$age, df$log_charges, main="Plot of Age and Log Charges", 
+     xlab="Age (Years)", ylab="Charges (Log Dollars)", col="steelblue")
+```
+
+
+```{r}
+# Creates regression model of just age
+lm2 <- lm(log_charges ~ age, data=df_train)
+# Prints model summary
+summary(lm2)
+```
+
+
+```{r}
+# Prints diagnostic plots for model
+par(mfrow=c(2,2))
+plot(lm2)
+```
+
+
+```{r}
+# Plots trained regression line on training set
+plot(df_train$age, df_train$log_charges, main="Trained Regression of Age", 
+     xlab="Age (Years)", ylab="Charges (Log Dollars)", col="steelblue")
+abline(lm2, col="red")
+```
+
+
+```{r}
+# Computes rmse for training set
+sqrt(mean((df[as.numeric(names(lm2$fitted.values)),]$charges - exp(lm2$fitted.values))^2))
+```
+
+
+```{r}
+# Plots trained regression line on test set
+plot(df_test$age, df_test$log_charges, main="Test Regression of Age", 
+     xlab="Age (Years)", ylab="Charges (Log Dollars)", col="steelblue")
+abline(lm2, col="red")
+```
+
+
+```{r}
+# Calculates rmse for the test set
+pred <- exp(predict(lm2, newdata=df_test))
+
+sqrt(mean((df_test$charges - pred)^2))
+```
+
+
+```{r}
+# Creates box plots of charges for males and females
+plot(df$sex, df$log_charges, main="Plot of Sex and Log Charges", xlab="Sex",
+     ylab="Charges (Log Dollars)", col="steelblue", xaxt="n")
+axis(1, at = 1:2, labels = c("Female", "Male"))
+```
+
+
+```{r}
+# Creates model of each category in sex
+lm3 <- lm(log_charges ~ sex, data=df)
+# Prints summary of model
+summary(lm3)
+```
+
+
+```{r}
+# Box plots of smoking status agaist log charges
+plot(df$smoker, df$log_charges, main="Plot of Smoking Status and Log Charges", 
+     xlab="Smoking Status", ylab="Charges (Log Dollars)", col="steelblue",
+     xaxt="n")
+axis(1, at = 1:2, labels = c("Doesn't Smoke", "Does smoke"))
+```
+
+
+```{r}
+# Creates model of each status in smoker
+lm4 <- lm(log_charges ~ smoker, data=df)
+# Prints summary of model
+summary(lm4)
+```
+
+
+```{r}
+# Plots number of children against log charges
+plot(df$children, df$log_charges, main="Plot of Children and Log Charges", 
+     xlab="Number of Children", ylab="Charges (Log Dollars)", col="steelblue")
+```
+
+
+```{r}
+# Creates regression model number of children
+lm5 <- lm(log_charges ~ children, data=df)
+# Prints model summary
+summary(lm5)
+```
+
+
+```{r}
+# Plots regions agains log charges
+plot(df$region, df$log_charges, main="Plot of Region and Log Charges", 
+     xlab="Region", ylab="Charges (Log Dollars)", col="steelblue", xaxt="n")
+axis(1, at = 1:4,
+     labels = c("Northeast", "Northwest", "Southeast", "Southwest"))
+```
+
+
+```{r}
+# Creates regression model of regions
+lm6 <- lm(log_charges ~ region, data=df)
+# Prints model summary
+summary(lm6)
+```
+

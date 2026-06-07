@@ -1,0 +1,321 @@
+---
+title: "Predicting Healthcare Insurance Charges: A Comparative Analysis of Regression and Machine Learning Models"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+# 1. Abstract
+
+Rising healthcare costs in the United States have made it increasingly important to understand the factors that drive insurance charges. This project investigates how well individual healthcare expenses can be predicted using demographic and lifestyle variables. The analysis is based on a publicly available data set containing 1,338 observations and seven variables.
+
+To address the research question, both statistical and machine learning approaches were applied. These included simple and multiple linear regression models, as well as decision trees and random forests. A logarithmic transformation of the response variable was used to address skewness and improve model performance. Model evaluation was conducted using training and test data, with metrics such as RMSE and R-squared used to compare predictive accuracy.
+
+The results indicate that smoking status, age, and BMI are the most influential predictors of insurance charges, with smoking having the strongest effect. While random forests achieved the highest predictive accuracy, a simplified multiple regression model provided a strong balance between performance and interpretability. Overall, this analysis highlights the effectiveness of combining statistical and machine learning techniques to model healthcare costs and provides insight into the key factors that influence insurance pricing.
+
+# 2. Introduction
+
+Healthcare is a complex issue in the United States as insurance costs vary widely between individuals and costs only continue to rise. Being able to understand the factors that drive these costs is very useful information for both the insurance provider and policyholder. For insurers, forming accurate predictions of healthcare charges can improve business strategies as well as assess possible risks. Alternatively, individuals are given insight on how demographics and lifestyle factors influence insurance charges.
+
+This project studies the relationship between six characteristics and how they interact with insurance expenses. These characteristics being age, sex, body mass index (BMI), number of children, smoking status, and geographic location. Based on these predictors alone, the goal of this project is to determine how accurately charges can be predicted. This will be done using statistical and machine learning models such as regression, decision trees, and random forests.
+
+The motivation for this analysis is the clear variability in healthcare related costs between individuals, suggesting that there are identifiable patterns that exist in determining insurance charges. The ability to identify these patterns will help to improve transparency in pricing, and highlight the importance of lifestyle factors for individuals.
+
+The remainder of this report is organized to follow the methodology of work in the field of data science. Next, background information and contributions to this study will be discussed. Afterward, the data will be introduced, prepared, and explored for upcoming analysis. Then, chosen methods and models will be presented, as well as the results yielded. Lastly, evaluation and discussion of the findings will occur as there will be potential for future work.
+
+# 3. Background and Contribution
+
+Predicting healthcare insurance charges has been proficiently studied in statistics and health economics. Regression models are commonly used with insurance companies to estimate individual risk and determine pricing. In many cases, multiple linear regression is used as a baseline method as it is very interpretable and has the ability to quantify relationships between predictor variables and medical costs.
+
+Prior analyses of cost data have consistently identified that a particular small set of variables act as strong predictors for insurance charges. In particular, smoking status has been known to have a substantial affect in medical expenses. More specifically, smokers often suffer significantly higher charges compared to those who don't smoke. Similarly, age and BMI are frequently identified as important factors because of their health risks and long term costs. These findings are observed from studies done on publicly available data sets, including the data used in this project.
+
+Further than linear models, more recent work has explored learning models such as decision trees, random forests, and gradient boosting. These models are helpful as they are able to capture nonlinear relationships without having to specify the model's parameters. Commonly, ensemble methods like random forests have shown to produce better predictive accuracy than linear regression, especially when variable relationships are complex.
+
+Despite the greater potential in ensemble predictive performance, many studies observed a trade off between accuracy and interpretability. While these models are able to achieve lower error, it can be harder to interpret how individual variables are contributing to predictions. As a result, linear regression is still very popular in applied healthcare settings where understanding variable relationships is important.
+
+This project builds on existing approaches by comparing traditional statistical methods and machine learning models with a combined structure. Therefore, the goal is not to only identify the most accurate models, but also better understand how choosing different models affects interpretation in healthcare insurance estimation.
+
+# 4. Data Description
+
+The data set used for this analysis was obtained from Kaggle titled, "Healthcare Insurance". This data set is publicly available and is commonly used to understand the same relationships being studied in this project. While it isn't exactly known how the data was collected and processed, the data is understood to represent a simplified sample of people with basic demographics and health attributes. In total, the data set contains a total of 1,338 observations with 7 variables. The data set is a mix of continuous and categorical variables making it flexible for a variety of statistical and machine learning models.
+
+Description of these variables is as follows:
+
+-   **Age**: Numerical variable as the age of someone in integer years
+-   **Sex**: Categorical variable of an individual either being male or female
+-   **BMI**: Numerical variable being the measure of a persons body fat based on height and weight
+-   **Children**: Categorical variable of the number of children that an individual has
+-   **Smoker**: Categorical variable of where someone is a smoker or not
+-   **Region**: Categorical variable of the region an individual resides in the United States
+-   **Charges**: Numerical and target variable being how much a person is charged in medical insurance
+
+One noteworthy feature of this data is that the distribution of charges is right skewed holding a small number of individuals that suffer very high costs. This may propose challenges for models that assume normally distributed errors, which in turn could be grounds for transformations. Similarly, there are also limitations that come with this data set. For one, the number of variables is relatively small meaning that important factors in determining costs may be excluded. These could be factors that are hard to publicly access, like pre-existing condition, income level, or access to healthcare. Second, the data is likely a simplified sample that may not fully capture the real world complexity of healthcare systems. Finally, the potential for outliers in the charges variable will be considered carefully as to not influence model performance.
+
+# 5. Data Preparation and Exploratory Analysis
+
+Before models can be developed, preprocessing steps were taken to ensure that the data was suitable for analysis and that model performance will be reliable. First, the data set was examined for any missing or inconsistent values. No missing or duplicate values were identified in any of the variables, therefore no observations were excluded from the data. Likewise, all variable ranges and categories were confirmed to be consistent meaning all entries were usable for analysis.
+
+Next, all categorical variables were converted into factors. This allows the regression based models to automatically create dummy variables so that there isn't any accidental ordering. This is essential for allowing each category in a variable to be one hot encoded into its own numerical, binary predictor for regression.
+
+## 5.1 Charges
+
+Due to previous suspicions that insurance charges have a right skew, charges were summarized and visualized for consideration into potential transformation. The minimum charge was found to be \$1,122, with a maximum charge of \$63,770. The median charge is \$9,382, which is noticeably lower than the mean charge of \$13,270. Therefore, just by the summary statistics alone, it can be concluded that there is a substantial right skew in the charges data.
+
+![](images/clipboard-444438928.png)
+
+Observing the histogram of charges, it is clear that there is a very long right tail to the data and a logarithmic transformation will likely be a good fit.
+
+![](images/clipboard-3055035567.png)
+
+Similarly, the box plot indicates a heavy skew to the right. The indication being the large number of outliers present and the substantial difference in lengths between Q1 and Q3. Specifically, 139 of the 1,338 observations were considered high outliers.
+
+Based on this examination, a logarithmic transformation was applied to each observation in the charges variable. Therefore, each new value was the natural logarithm of the previous value. This produced a minimum value of 7.023, and maximum value of 11.063 log dollars. Additionally, the mean and median were now 9.099 and 9.147 log dollars. These values are now much closer than before the transformation where now the mean is actually slightly lower than the median.
+
+![](images/clipboard-2532222977.png)
+
+Looking at the histogram visualization, it is clear that there has been a dramatic shift in the shape of the data. The transformation now looks much closer to a normal distribution as more frequent data is towards the center, and less frequent data falls towards the tails. While the new data isn't perfect, it is clearly better with no obvious skewness in either direction.
+
+![](images/clipboard-2317856361.png)
+
+In terms of the box plot, this transformation has removed any previous outliers and created more proportional quartiles.
+
+## 5.2 Age
+
+Now that the target variable has been properly dealt with, the predictor variables can be explored for analysis. For age, the minimum is 18 years, the maximum is 64 years, and both the median and mean are 31 years old. These statistics show that there isn't any skew for the age data.
+
+![](images/clipboard-3763018359.png)
+
+The histogram of age almost resembles that of a uniform distribution, which also supports our prior description of no skew. However, there is a noticeably greater frequency of people under the age of 20 years.
+
+![](images/clipboard-253127094.png)
+
+Due to the uniqueness of this plot, it seems there may be other factors that are influencing insurance charges given age. For lower costs, it appears there is a clear pattern between how much someone is charged and how old they are. Likewise, for higher costs, it looks as though charges stay relatively constant for any given age. This is why it is believed that there is likely other variables that are determining insurance costs within the age variable.
+
+![](images/clipboard-3198378976.png)
+
+Knowing that smoking status is often significant for determining insurance charges, it was necessary to understand if this variable was influencing patterns in age. Using the previous plot, now with smoking status layered over, there is a clear underlying pattern. For those who are smokers, it appears that despite their age, they incur constantly high costs. For those who aren't smokers, there seems to be a linear pattern where charges tend to increase as age increases.
+
+## 5.3 BMI
+
+Looking at BMI, the minimum body mass index is 15.96, the maximum is 53.13, the mean is 30.66, and the median is 30.40. This shows that there may be a small right skew in the data as the mean is slightly higher than the median.
+
+![](images/clipboard-4124915648.png)
+
+The shape of the data looks like that of a normal distribution along with a slight right skew due to a small positive tail.
+
+![](images/clipboard-2509983023.png)
+
+After visualizing the box plot, it appears that there are nine high outliers that are giving the data a positive skew. Rather than removing these outliers, they were chosen to be retained in the data set as they likely represent real cases of high medical costs. Using tree based methods, these outliers will be addressed as these models are less sensitive to extreme values.
+
+![](images/clipboard-152626500.png)
+
+The relationship between insurance charges and BMI looks to be very uncorrelated. Visually, there is no clear pattern between the two variables.
+
+## 5.4 Sex
+
+The variable sex contains roughly the same amount of observations with 662 being female and 676 being male.
+
+![](images/clipboard-91805593.png)
+
+The box plots of costs for males and females appear to share a similar spread in data, along with approximatley the same median. Both plots seem to have a similar maximum value, although females have a slightly greater minimum.
+
+## 5.5 Smoker
+
+This predictor contains 274 observations of people who smoke and 1064 observations of people who do not smoke.
+
+![](images/clipboard-1718972529.png)
+
+There is a clear difference in the distribution of insurance charges for those who smoke, and those who do not. For the ranges, people who don't smoke have a minimum charge of about \$1,121, and a maximum charge of \$36,910. Similarly, people who do smoke have a minimum charge of around \$12,829, and a maximum charge of \$63,770. The median value for costs incurred with non-smokers is \$7,345, whereas the median for smokers is \$34,456.
+
+## 5.6 Children
+
+The children variable ranges from 0 to 5 children. Of all observations, 574 have no children, 324 have one child, 240 have two, 157 have three, 25 have 4, and 18 have 5. As expected, the number of observations decreases as the number of children increases.
+
+![](images/clipboard-1177142638.png)
+
+Generally, the ranges for the number of children against insurance charges appears to get smaller the greater number of children one has while still remaining centered toward the median. Therefore, people with no children have the lowest and highest costs of the entire data set. The median values for each number of children are all relatively close. The lowest median is one child with \$8,483 dollars and the highest median is four children with \$11,033.
+
+## 5.7 Region
+
+There are a total of four regions for this analysis, Northwest, Eastwest, Southwest, and Southeast. In total, 324 observations contain Northeast, 325 contain Northwest, 364 contain Southeast, and 325 contain Southwest.
+
+![](images/clipboard-2351788287.png)
+
+# 6. Analysis and Results
+
+This project evaluates several predictive modeling approaches to estimate healthcare insurance charges. Because the response variable (insurance charges) is continuous, regression based methods are appropriate. Multiple models were compared to determine which approach best balances predictive accuracy, interpretability, and the ability to capture nonlinear relationships. Model performance was assessed using training and testing data with evaluation metrics such as Root Mean Squared Error (RMSE), and R-squared.
+
+## 6.1 Simple Linear Regression
+
+Simple linear regression models were first used to examine the relationship between individual predictors and insurance charges. These models provide an interpretable starting point and help identify whether single variables have meaningful predictive value.
+
+$$
+\hat{y}=\beta_0+\beta1(x)
+$$
+
+### 6.1.1 BMI
+
+A simple linear regression model using BMI as the only predictor was fit to examine whether body mass index is associated with healthcare insurance charges. Seeing that the correlation between these two variables was weak, this model acted as a baseline for prediction accuracy.
+
+The fitted model equation is:
+
+$$
+\hat{y} = 8.559 + 0.018(BMI)
+$$
+
+![](images/clipboard-1426445011.png)
+
+Looking at the lack of patterns in the residuals vs fitted values, it seems that linearity and equal variance can be assumed. Similarly, normality can be assumed as the points closely follow the line in the Q-Q plot without much deviation. Lastly, there may be some points that have high leverage and are influencing others, but it doesn't seem to be very extreme.
+
+![](images/clipboard-1805918142.png)
+
+![](images/clipboard-1243186564.png)
+
+Based on the visualization of the regression lines on both the training and testing sets, it is clear that this model has very little predictive power. The lack of correlation between the variables shows that BMI alone provides a poor linear relationship against log charges.
+
+Results showed a statistically significant positive relationship between BMI and charges (p = 0.0002). The model explained only a small proportion of the overall variation in charges (R-squared = 0.0146), indicating that BMI alone has limited explanatory power. Predictive performance was also weak. The training RMSE was \$12,677.61 and the test RMSE was \$12,579.86. Overall, BMI has a statistically meaningful relationship with insurance charges, yet it is not a strong standalone predictor, and additional variables are needed to improve prediction accuracy.
+
+### 6.1.2 Age
+
+Next a linear regression model using age as the sole predictor was created. Although there appears to be more than a linear pattern between age and insurance charges, this would help evaluate a simple prediction accuracy.
+
+The fitted model equation is:
+
+$$
+\hat{y} = 7.770 + 0.034(Age)
+$$
+
+![](images/clipboard-2186503342.png)
+
+For the residuals against fitted values, the appears to be a clear funnel shape pattern when age is used as a predictor. Similarly, there looks to be a sort of 'S' shape to the Q-Q plot which means that the residuals have a clear deviation from the normal line. Therefore, assumptions of linearity, equal variance, and normality appear to be violated. Thus, for moving forward with analysis, it should be noted that linear regression models using age as a predictor may not be completely reliable. This means that certain values in variance metrics, like R-Squared, may not be completely accurate for the produced model.
+
+![](images/clipboard-389530892.png)
+
+![](images/clipboard-261693054.png)
+
+Visually, there looks to be a linear pattern at the lower log charges values below the prediction line for both the training and testing. This means that there will likely be accurate classifications for people with light charges but poor classifications for people with heavy charges with just age as a predictor.
+
+Results showed a statistically significant positive relationship between BMI and charges (p \< 2e-16). The model explained a substantially larger portion of the variation in charges than the BMI model (R-squared = 0.2742), indicating that age is a much stronger lone predictor of insurance costs. Likewise, training RMSE was \$12,062.52 and the test RMSE was \$11,993.45. Overall, age has a strong and statistically meaningful relationship with insurance charges, and it performs considerably better than BMI as a single predictor. However, prediction error remained sizable, indicating that additional variables are still necessary for more accurate cost estimation.
+
+## 6.2 Multiple Linear Regression
+
+This approach was appropriate because the response variable is continuous, and multiple linear regression allows the effect of each predictor to be evaluated while controlling for all other variables.
+
+$$
+\hat{y}=\beta_0+\beta_1(x_1)+\beta_2(x_2)+...+\beta_n(x_n)
+$$
+
+### 6.2.1 All Predictors
+
+The first model includes smoking status, age, number of children, BMI, region, and sex as predictors. This serves as a comprehensive benchmark using all demographic and health related information available in the dataset.
+
+The fitted model equation is:
+
+$$
+\hat{y} = 6.991+1.553(Smokes)+0.034(Age)+0.159(1Kid)+0.311(2Kid)+0.263(3Kid)+\\0.508(4Kid)+0.385(5Kid)+0.014(BMI)-0.076(NW)-0.172(SE)-0.167(SW)-0.073(Male)
+$$
+
+Results showed a strong overall fit, with an R-squared of 0.772, meaning that approximately 77.2% of the variation in insurance charges was explained by the predictors. This is a substantial improvement over the simple regression models using only BMI or age. The model was also highly statistically significant overall (p \< 2.2e-16), indicating that the predictors collectively provide meaningful explanatory power.
+
+Smoking status was the strongest predictor in the model. Holding other variables constant, smokers were associated with dramatically higher expected insurance charges than non-smokers. Age was also a major positive predictor, with charges increasing as individuals became older. BMI had a statistically significant positive effect, indicating higher charges for individuals with larger BMI values. Several categories of the children variable were also significant, suggesting family size may influence insurance costs. Regional differences were present, with some regions showing lower expected charges relative to the reference group. Sex was statistically significant as well, with males associated with slightly lower expected charges than females after controlling for other factors.
+
+Predictive performance improved considerably compared to simple linear regression models with a training RMSE of \$8,252.76 and test RMSE of \$8,588.92. These values are much lower than single regression, indicating stronger practical prediction accuracy. Overall, the full multiple regression model performed strongly and demonstrated that insurance charges are influenced by several variables. Smoking status, age, and BMI being the most important predictors.
+
+### 6.2.5 Simplified Regression
+
+A simplified multiple regression model was developed using only the most influential predictors and interaction terms. The model included smoking status, age, BMI, and interactions between smoking status with both age and BMI. This reduced model was designed to improve interpretability while retaining variables most strongly associated with insurance costs.
+
+The fitted model equation is:
+
+$$
+\hat{y}=1.226(Smoker)+0.001(BMI)+0.042(Age)+0.050(Smoker \times BMI)-0.032(Smoker \times Age)
+$$
+
+Results showed excellent overall performance, with an R-squared of 0.7962, meaning that approximately 79.6% of the variation in insurance charges was explained by the model. This exceeded the performance of the full multiple regression model, despite using fewer predictors. The model was highly statistically significant overall (p \< 2e-16), indicating strong explanatory value. Predictive performance improved substantially compared with previous regression models. The training RMSE was \$5,387.14 and the test RMSE was \$4,978.82. These were the lowest error values among the linear regression models considered, indicating strong prediction accuracy. Overall, the simplified regression model performed exceptionally well while using fewer predictors than the full model. The results indicate that smoking status, age, and the interaction between smoking and BMI are central drivers of healthcare insurance charges. This model demonstrates that a carefully selected set of variables can outperform a more complex model while remaining easier to interpret.
+
+## 6.3 Decision Trees
+
+Regression trees were an appropriate method because they can capture nonlinear relationships and interaction effects without requiring the strict assumptions of linear regression. Compared with multiple linear regression, regression trees offered a more flexible structure by identifying decision rules based on predictor thresholds.
+
+### 6.3.1 All Predictors
+
+Like the multiple linear regression model, a decision tree using all available predictors was fit to estimate healthcare insurance charges. Decision trees are appropriate in this setting because they can capture nonlinear relationships and interaction effects without requiring the linearity assumptions of regression models.
+
+![](images/clipboard-4106358066.png)
+
+Predictive performance was strong with a training RMSE of \$4,935.53 and test RMSE of \$4,655.86. These values were lower than those of the multiple linear regression models, indicating improved predictive accuracy. The test RMSE being slightly lower than the training RMSE suggests the tree generalized well to unseen data. Overall, the decision tree performed very well while remaining very interpretable. The model clearly showed that smoking status is the most important determinant of insurance charges, along with age and BMI.
+
+### 6.3.2 Complex Tree
+
+A more complex regression tree was fit using the same predictors as the previous tree model, but now allowing additional splits and a deeper tree structure. This approach was used to determine whether greater tree complexity could improve predictive accuracy by capturing finer subgroup patterns in the data.
+
+![](images/clipboard-4231254116.png)
+
+Predictive performance improved compared with the simpler decision tree. The training RMSE was \$4,392.28 and the test RMSE was \$4,494.40. The test RMSE being only slightly higher than the training RMSE suggests that the additional complexity did not lead to substantial overfitting and that the model generalized well to unseen data. Overall, the complex tree provided one of the strongest predictive performances among the models tested. Although there was some trade off in interpretability. This demonstrates that carefully increased tree complexity can improve accuracy without sacrificing generalization.
+
+## 6.4 Random Forests
+
+Random forests were an appropriate method because they can model nonlinear relationships and interactions while reducing the overfitting risk that is associated with a single decision tree. Unlike one regression tree, which can be sensitive to small changes in the data, random forests create many trees using bootstrap samples and random subsets of predictors. Predictions are then averaged across all trees, producing more stable and accurate results.
+
+### 6.4.1 All Predictors
+
+A random forest model using all available predictors was created. Random forests are appropriate for this problem because they combine many decision trees, allowing the model to capture nonlinear relationships and interactions while reducing the overfitting risk often seen in a single tree.
+
+Results indicated that the random forest was one of the strongest performing models tested. By averaging predictions across 500 trees, the model was able to identify complex patterns in the data that were not fully captured by linear regression or a single decision tree. Predictive performance slightly improved relative to the decision trees. The training RMSE was \$4,017.60 and the test RMSE was \$4,221.20 indicating superior prediction accuracy.
+
+Although random forests typically sacrifice interpretability compared with regression equations or single trees, they offer strong predictive power and more stable results. Overall, the full random forest model delivered excellent predictive accuracy and demonstrated that ensemble tree methods are highly effective for estimating healthcare insurance charges.
+
+## 6.5 Results
+
+Across all modeling approaches, several consistent patterns appeared for both predictive performance and the factors that most strongly influence healthcare insurance charges.
+
+First, simple linear regression models demonstrated that the two individual predictors varied greatly in their explanatory power. BMI, while statistically significant, contributed very little to explaining variation in charges given its low R-squared value and high prediction error. In contrast, age proved to be a much stronger standalone predictor, capturing a meaningful portion of the variability in insurance costs. However, both models produced relatively high RMSE values, indicating that single variable models are insufficient for accurate prediction.
+
+The multiple linear regression models showed substantial improvement. The full model incorporating all predictors explained over 77% of the variation in insurance charges, significantly reducing prediction error. Smoking status emerged as the most influential variable, with smokers consistently being associated with much higher costs compared to non-smokers. Age and BMI also contributed positively to predicted charges, while regional and demographic variables had smaller but still measurable effects. Notably, the simplified multiple regression model outperformed the full model, with both a higher R-squared value and lower RMSE. This demonstrates that carefully selected predictors and interaction terms involving smoking can capture most of the meaningful variation in the data while still maintaining a more interpretable structure.
+
+Tree based methods further improved predictive performance by capturing nonlinear relationships and interactions automatically. The decision tree models revealed clear patterns having smoking status as the primary split, followed by age and BMI. Increasing the complexity of the tree led to improved accuracy without substantial overfitting, as indicated by similar training and test RMSE values. These models provided strong predictive performance while maintaining a great level of interpretability through their visual structure.
+
+The random forest model achieved the best overall predictive accuracy among all approaches tested. By aggregating predictions across many decision trees, the model was able to reduce variance and capture complex relationships in the data. This resulted in the lowest RMSE values on both training and test sets. However, this improvement in accuracy came with reduced interpretability, as using ensemble methods tends to make it more difficult to isolate the effect of individual predictors.
+
+Overall, the results highlight a clear trade off between interpretability and predictive performance. While random forests provided the most accurate predictions, decision trees and simplified multiple regression models offered a strong balance between accuracy and interpretability. Across all models, smoking status, age, and BMI consistently emerged as the most important factors influencing healthcare insurance charges. This reinforces their key part in determining cost outcomes.
+
+# 7. Evaluation and Reflection
+
+This analysis provides strong evidence that healthcare insurance charges can be reasonably predicted using a combination of demographic and lifestyle variables. However, these results depend on several modeling choices and assumptions that require careful consideration.
+
+One important factor affecting robustness is the decision to apply a logarithmic transformation to the response variable. This transformation improved the distribution of charges and helped satisfy linear regression assumptions such as homoscedasticity and normally distributed errors. As a result, regression based models performed more reliably. However, with the presence of the age variable in linear models, the assumptions of linearity seemed to be at risk again. Due to the pattern of the age variable against charges, it appeared clear that assumptions were yet again violated. Similarly, the interpretation of coefficients are altered as effects are expressed in terms of proportions rather than absolute changes in charges. While this is appropriate for skewed cost data, alternative transformations or modeling approaches could yield slightly different results.
+
+There are also several limitations associated with the dataset itself. The data contains only a small number of variables, which restricts the ability to fully explain variation in insurance charges. Important factors such as existing health conditions, income level, occupation, and access to healthcare are not included, yet likely play a significant role in determining costs. Furthermore, the dataset is relatively small, with only 1,338 observations, which may limit generality in findings. It is also unclear how the data was collected, raising the possibility that it may not be fully representative of the broader population.
+
+Potential sources of bias and error should also be considered. For example, the strong effect of smoking status may partly reflect omitted variable bias if smoking is correlated with other unobserved health risks. Similarly, the presence of outliers in the original charges variable suggests that extreme cases may influence model estimates, particularly in linear regression models. Although the log transformation and tree based methods helped mitigate this issue, some sensitivity to extreme values may still remain. Additionally, categorical variables such as region and sex were encoded as factors, but these variables may mask more nuanced underlying differences that are not captured in the analysis.
+
+From a modeling perspective, there are trade offs between interpretability and predictive performance. While random forests produced the most accurate predictions, they lack transparency compared to regression and tree models. This makes it more difficult to clearly communicate how individual predictors influence outcomes. In contrast, the simplified regression model offered strong performance while remaining interpretable, but it still relies on assumptions such as linearity (on the log transformed scale) and correctly specified interactions.
+
+If this analysis were to be extended, several improvements could be made. First, additional variables could be incorporated to better capture the complexity of healthcare costs. Second, more advanced models such as gradient boosting machines could be explored to further improve predictive accuracy. Finally, model interpretation techniques for complex models could be utilized to better understand how predictors influence outcomes in ensemble methods.
+
+Overall, results of this project should be interpreted with an understanding of the underlying assumptions, data limitations, and potential sources of bias. The analysis demonstrates both the strengths and limitations of statistical and machine learning approaches in predicting healthcare insurance charges, while still creating opportunities for refinement in future work.
+
+# 8. Discussion and Conclusion
+
+Across all analyses, several key insights consistently emerged. Most notably, smoking status was identified as the strongest predictor of insurance costs, with smokers incurring substantially higher charges than non-smokers. Age also demonstrated a strong positive relationship with charges, while BMI contributed a smaller but still meaningful effect. Models that incorporated multiple predictors significantly outperformed simple models, and the inclusion of interaction terms involving smoking further improved predictive performance.
+
+These findings align closely with existing work in health economics and science. Prior studies have similarly identified smoking, age, and BMI as critical determinants of healthcare costs, which reinforces the validity of my results obtained in this analysis. Additionally, the observed trade off between interpretability and predictive performance reflects a common theme in applied data science. While ensemble methods such as random forests achieved the highest accuracy, simpler regression models still remained valuable because of their transparency and ease of interpretation.
+
+From a practical perspective, the results highlight the importance of lifestyle factors especially smoking in driving healthcare expenses. This has implications for both insurers and individuals. For insurers, understanding these relationships can support more accurate pricing strategies and risk assessment. For individuals, the findings emphasize how personal health behaviors can significantly influence financial outcomes related to healthcare. Furthermore, the strong performance of relatively simple models suggests that effective predictions can be made without overly complex methods, given that the key variables are included and properly modeled.
+
+There are several directions for future work that could extend this analysis. Incorporating additional variables, such as preexisting medical conditions, income, or healthcare access, would likely improve model accuracy and provide a more comprehensive understanding of cost drivers. More advanced modeling techniques, including gradient boosting methods, could also be explored to further enhance predictive performance. Finally, further investigation into model interpretability for ensemble methods could help bridge the gap between predictive accuracy and practical usability.
+
+In conclusion, this project demonstrates that healthcare insurance charges can be effectively modeled using both statistical and machine learning techniques. The analysis not only confirms previously established relationships but also illustrates how different modeling approaches influence both prediction and interpretation.
+
+# 9. References
+
+Cenita, J. A. S., Asuncion, P. R. F., & Victoriano, J. M. (2023). *Performance evaluation of regression models in predicting the cost of medical insurance*. arXiv.
+
+[Kaggle Healthcare Insurance Dataset](https://www.kaggle.com/datasets/mirichoi0218/insurance?utm_source=chatgpt.com)\
+Choi, M. (n.d.). *Medical cost personal datasets*. Kaggle.
+
+Kaushik, K., Bhardwaj, A., Dwivedi, A. D., & Singh, R. (2022). *Machine learning-based regression framework to predict health insurance premiums*. *International Journal of Environmental Research and Public Health, 19*(13), 7898.
+
+[OpenAI ChatGPT](https://chatgpt.com/?utm_source=chatgpt.com). (2025). *ChatGPT* (GPT-5.5 version) [Large language model]. Used for code documentation assistance.
+
+Orji, U., & Ukwandu, E. (2023). *Machine learning for an explainable cost prediction of medical insurance*. arXiv.
